@@ -1,6 +1,7 @@
 version: 2
+
 jobs:
-  build:
+  test:
     docker:
       - image: circleci/golang:1.11.2
     working_directory: /go/src/github.com/MarioCarrion/loteria
@@ -8,3 +9,19 @@ jobs:
       - checkout
       - run: go get -v -t -d ./...
       - run: go test -v ./...
+  lint:
+    docker:
+      - image: supinf/gometalinter:latest
+    working_directory: /go/src/github.com/MarioCarrion/loteria
+    environment:
+      CGO_ENABLED: 0
+    steps:
+      - checkout
+      - run: gometalinter --enable-all ./...
+
+workflows:
+  version: 2
+  test_and_lint:
+    jobs:
+      - test
+      - lint
