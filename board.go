@@ -8,8 +8,9 @@ import (
 type (
 	// Board defines a "tabla", which is 4x4 grid of 16 Cards.
 	Board struct {
-		marked index
-		cards  map[Card]index
+		WinningPattern WinningPattern
+		marked         index
+		cards          map[Card]index
 	}
 
 	// index indicates the concrete bit to enable in "Board.marked".
@@ -23,10 +24,10 @@ const (
 )
 
 // NewBoard returns a new board using concrete cards.
-// FIXME validate: all cards on board are built.
+// FIXME validate: cards uniqueness.
 func NewBoard(cards []Card) Board {
 	board := Board{cards: map[Card]index{}}
-	var bit uint16 = 1
+	var bit uint16
 	for _, card := range cards {
 		board.cards[card] = index(1) << bit
 		bit++
@@ -43,7 +44,7 @@ func NewRandomBoard() Board {
 	for len(cards) < 16 {
 		v := r.Intn(53)
 		if _, ok := cards[Card(v)]; !ok {
-			cards[Card(v)] = index(len(cards) + 1)
+			cards[Card(v)] = index(1) << uint16(len(cards))
 		}
 	}
 
@@ -60,4 +61,15 @@ func (b *Board) Mark(c Card) error {
 	b.marked |= index
 
 	return nil
+}
+
+// Winner indicates whether the marked cards win the game.
+func (b *Board) Winner() bool {
+	for _, pattern := range defaultWinningPatterns {
+		if (uint16(b.marked) & uint16(pattern)) == uint16(pattern) {
+			b.WinningPattern = pattern
+			return true
+		}
+	}
+	return false
 }
