@@ -1,6 +1,9 @@
 package loteria
 
 import (
+	"crypto/md5" //nolint: gosec
+	"encoding/json"
+	"fmt"
 	"math/rand"
 	"time"
 )
@@ -11,7 +14,11 @@ type (
 		WinningPattern WinningPattern
 		marked         index
 		cards          map[Card]index
+		id             BoardID
 	}
+
+	// BoardID represents the Board ID
+	BoardID string
 
 	// index indicates the concrete bit to enable in "Board.marked".
 	index uint16
@@ -51,6 +58,45 @@ func NewRandomBoard() Board {
 	return Board{cards: cards}
 }
 
+// Cards returns the cards on the board.
+func (b *Board) Cards() [16]Card {
+	findIndex := func(n uint16) int {
+		var i uint16 = 1
+		var pos uint16 = 1
+
+		for i&n == 0 {
+			i = i << 1
+			pos++
+		}
+
+		return int(pos - 1)
+	}
+
+	cards := [16]Card{}
+
+	for k, v := range b.cards {
+		cards[findIndex(uint16(v))] = k
+	}
+
+	return cards
+}
+
+// ID returns the Board Identifier
+func (b *Board) ID() BoardID {
+	if b.id != "" {
+		return b.id
+	}
+
+	a := []byte{}
+	for _, c := range b.cards {
+		jb, _ := json.Marshal(c) //nolint: gosec
+		a = append(a, jb...)
+	}
+	b.id = BoardID(fmt.Sprintf("%x", md5.Sum(a))) //nolint: gosec
+
+	return b.id
+}
+
 // Mark marks off the card on the board.
 func (b *Board) Mark(c Card) error {
 	index, ok := b.cards[c]
@@ -63,8 +109,8 @@ func (b *Board) Mark(c Card) error {
 	return nil
 }
 
-// Winner indicates whether the marked cards win the game.
-func (b *Board) Winner() bool {
+// IsWinner indicates whether the marked cards win the game.
+func (b *Board) IsWinner() bool {
 	for _, pattern := range defaultWinningPatterns {
 		if (uint16(b.marked) & uint16(pattern)) == uint16(pattern) {
 			b.WinningPattern = pattern

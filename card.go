@@ -1,12 +1,25 @@
 package loteria
 
+import (
+	"fmt"
+	"math/rand"
+	"time"
+)
+
 type (
-	// Card defines the card, which is part of the board and also announced by
+	// Card defines the card, which is part of the Boards and also announced by
 	// the caller.
 	Card uint64
 
 	// Deck defines the type containing all the 54 Cards.
-	Deck [54]Card
+	Deck struct {
+		cards       [deckLength]Card
+		selectIndex int
+	}
+)
+
+const (
+	deckLength = 54
 )
 
 //nolint
@@ -65,11 +78,13 @@ const (
 	FlowerPotCard
 	HarpCard
 	FrogCard
+	//
+	blankCard
 )
 
 //nolint
 var (
-	cardNames = [54]string{
+	cardNames = [(deckLength + 1)]string{
 		"Rooster",
 		"Devil",
 		"Lady",
@@ -124,21 +139,43 @@ var (
 		"FlowerPot",
 		"Harp",
 		"Frog",
+		//
+		"Blank",
 	}
 )
 
-// NewDeck returns a Deck of sorted Cards.
+// NewDeck returns a Deck with sorted Cards.
 func NewDeck() Deck {
-	r := [54]Card{}
-	i := 1
-	for i < 54 {
+	r := [deckLength]Card{}
+
+	for i := 0; i < deckLength; i++ {
 		r[i] = Card(i)
-		i++
 	}
-	return r
+
+	return Deck{cards: r}
 }
 
 // String returns the card name.
 func (c Card) String() string {
 	return cardNames[int(c)]
+}
+
+// Select select a card from the deck
+func (d *Deck) Select() (Card, error) {
+	if d.selectIndex == deckLength {
+		return blankCard, fmt.Errorf("deck is empty")
+	}
+
+	r := d.cards[d.selectIndex]
+	d.selectIndex++
+	return r, nil
+}
+
+// Shuffle shuffles the deck.
+func (d *Deck) Shuffle() {
+	d.selectIndex = 0
+	rand.Seed(time.Now().UnixNano())
+	rand.Shuffle(len(d.cards), func(i, j int) {
+		d.cards[i], d.cards[j] = d.cards[j], d.cards[i]
+	})
 }

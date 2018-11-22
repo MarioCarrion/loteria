@@ -55,61 +55,61 @@ func TestBoard_Winner(t *testing.T) {
 			"FirstRow",
 			[4]loteria.Card{loteria.DeathCard, loteria.FlagCard, loteria.MoonCard, loteria.DrumCard},
 			true,
-			loteria.FirstRow,
+			loteria.WinningPatternFirstRow,
 		},
 		{
 			"SecondRow",
 			[4]loteria.Card{loteria.SpiderCard, loteria.SkullCard, loteria.FrogCard, loteria.LadderCard},
 			true,
-			loteria.SecondRow,
+			loteria.WinningPatternSecondRow,
 		},
 		{
 			"ThirdRow",
 			[4]loteria.Card{loteria.BonnetCard, loteria.BirdCard, loteria.SoldierCard, loteria.MermaidCard},
 			true,
-			loteria.ThirdRow,
+			loteria.WinningPatternThirdRow,
 		},
 		{
 			"FourthRow",
 			[4]loteria.Card{loteria.RoosterCard, loteria.DrunkardCard, loteria.FeatherCard, loteria.CactusCard},
 			true,
-			loteria.FourthRow,
+			loteria.WinningPatternFourthRow,
 		},
 		{
 			"FirstColumn",
 			[4]loteria.Card{loteria.DeathCard, loteria.SpiderCard, loteria.BonnetCard, loteria.RoosterCard},
 			true,
-			loteria.FirstColumn,
+			loteria.WinningPatternFirstColumn,
 		},
 		{
 			"SecondColumn",
 			[4]loteria.Card{loteria.FlagCard, loteria.SkullCard, loteria.BirdCard, loteria.DrunkardCard},
 			true,
-			loteria.SecondColumn,
+			loteria.WinningPatternSecondColumn,
 		},
 		{
 			"ThirdColumn",
 			[4]loteria.Card{loteria.MoonCard, loteria.FrogCard, loteria.SoldierCard, loteria.FeatherCard},
 			true,
-			loteria.ThirdColumn,
+			loteria.WinningPatternThirdColumn,
 		},
 		{
 			"DiagonalLeftTop",
 			[4]loteria.Card{loteria.DeathCard, loteria.SkullCard, loteria.SoldierCard, loteria.CactusCard},
 			true,
-			loteria.DiagonalLeftTop,
+			loteria.WinningPatternDiagonalLeftTop,
 		},
 		{
-			"DiagonalRightTop ",
+			"DiagonalRightTop",
 			[4]loteria.Card{loteria.DrumCard, loteria.FrogCard, loteria.BirdCard, loteria.RoosterCard},
 			true,
-			loteria.DiagonalRightTop,
+			loteria.WinningPatternDiagonalRightTop,
 		},
 		{
-			"NoWinner",
+			"DefaultWinningPattern",
 			[4]loteria.Card{loteria.DrumCard},
 			false,
-			loteria.NoWinner,
+			loteria.WinningPatternDefault,
 		},
 	}
 
@@ -120,7 +120,7 @@ func TestBoard_Winner(t *testing.T) {
 				board.Mark(card)
 			}
 
-			if winner := board.Winner(); winner != tt.expectedWinner {
+			if winner := board.IsWinner(); winner != tt.expectedWinner {
 				t.Fatalf("expected winner to be %T, actual %T", tt.expectedWinner, winner)
 			}
 			if board.WinningPattern != tt.expectedWinningPattern {
