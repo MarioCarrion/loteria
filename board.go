@@ -9,15 +9,15 @@ type (
 	// Board defines a "tabla", which is 4x4 grid of 16 Cards.
 	Board struct {
 		WinningPattern WinningPattern
-		id             BoardID
 		marked         boardIndex
 		cardsComputed  bool
 		cardsMap       map[Card]boardIndex
 		cards          [16]Card
+		id             BoardID
 	}
 
 	// BoardID represents the Board ID
-	BoardID uint16
+	BoardID uint64
 
 	// boardIndex indicates the location (bitwise) of cards on the board.
 	boardIndex uint16
@@ -89,9 +89,9 @@ func (b *Board) ID() BoardID {
 		return b.id
 	}
 
-	var res uint16
-	for _, c := range b.cardsMap {
-		res |= uint16(c)
+	var res uint64
+	for c := range b.cardsMap {
+		res |= 1 << uint64(c)
 	}
 
 	b.id = BoardID(res)

@@ -20,7 +20,7 @@ func main() {
 
 	players := [2]*loteria.Player{&p1, &p2}
 
-AnnoucingLoop:
+AnnouncingLoop:
 	for {
 		card, err := caller.Announce()
 		if err != nil {
@@ -41,7 +41,7 @@ AnnoucingLoop:
 
 			if err := caller.Loteria(player.Name()); err == nil {
 				fmt.Printf("\n%s WON!!\n", player.Name())
-				break AnnoucingLoop
+				break AnnouncingLoop
 			}
 			// fmt.Printf("\n")
 		}

@@ -46,6 +46,14 @@ func TestBoard_ID(t *testing.T) {
 	if expected != got {
 		t.Fatalf("expected %d, got %d", expected, got)
 	}
+
+	//
+	b1 := loteria.NewRandomBoard()
+	b2 := loteria.NewRandomBoard()
+
+	if b1.ID() == b2.ID() {
+		t.Fatalf("two random boards should not have the same ID")
+	}
 }
 
 func TestBoard_Mark(t *testing.T) {
