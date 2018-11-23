@@ -1,10 +1,52 @@
 package loteria_test
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/MarioCarrion/loteria"
 )
+
+func newTestCards() [16]loteria.Card {
+	return [16]loteria.Card{
+		loteria.DeathCard, loteria.FlagCard, loteria.MoonCard, loteria.DrumCard,
+		loteria.SpiderCard, loteria.SkullCard, loteria.FrogCard, loteria.LadderCard,
+		loteria.BonnetCard, loteria.BirdCard, loteria.SoldierCard, loteria.MermaidCard,
+		loteria.RoosterCard, loteria.DrunkardCard, loteria.FeatherCard, loteria.CactusCard,
+	}
+}
+
+func TestBoard_Cards(t *testing.T) {
+	cards := newTestCards()
+
+	board := loteria.NewBoard(cards)
+	got := board.Cards()
+	if !reflect.DeepEqual(cards, got) {
+		t.Fatalf("expected:\n%s\ngot:\n%s", cards, got)
+	}
+
+	got1 := board.Cards() // memoized
+	if !reflect.DeepEqual(cards, got1) {
+		t.Fatalf("expected:\n%s\ngot:\n%s", cards, got1)
+	}
+}
+
+func TestBoard_ID(t *testing.T) {
+	board := loteria.NewRandomBoard()
+
+	expected := board.ID()
+	got := board.ID()
+	if expected != got {
+		t.Fatalf("expected %d, got %d", expected, got)
+	}
+
+	cards := board.Cards()
+	newBoard := loteria.NewBoard(cards)
+	got = newBoard.ID()
+	if expected != got {
+		t.Fatalf("expected %d, got %d", expected, got)
+	}
+}
 
 func TestBoard_Mark(t *testing.T) {
 	tests := [...]struct {
@@ -15,7 +57,7 @@ func TestBoard_Mark(t *testing.T) {
 	}{
 		{
 			"OK",
-			loteria.NewBoard([]loteria.Card{loteria.FrogCard, loteria.DevilCard}),
+			loteria.NewBoard([16]loteria.Card{loteria.FrogCard, loteria.DevilCard}),
 			loteria.FrogCard,
 			nil,
 		},
@@ -38,12 +80,7 @@ func TestBoard_Mark(t *testing.T) {
 }
 
 func TestBoard_Winner(t *testing.T) {
-	cards := []loteria.Card{
-		loteria.DeathCard, loteria.FlagCard, loteria.MoonCard, loteria.DrumCard,
-		loteria.SpiderCard, loteria.SkullCard, loteria.FrogCard, loteria.LadderCard,
-		loteria.BonnetCard, loteria.BirdCard, loteria.SoldierCard, loteria.MermaidCard,
-		loteria.RoosterCard, loteria.DrunkardCard, loteria.FeatherCard, loteria.CactusCard,
-	}
+	cards := newTestCards()
 
 	tests := [...]struct {
 		name                   string

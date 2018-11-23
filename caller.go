@@ -1,8 +1,6 @@
 package loteria
 
 import (
-	//nolint: gosec
-
 	"fmt"
 )
 
@@ -41,7 +39,6 @@ func (c *Caller) AddPlayer(name PlayerName) (Player, error) {
 	}
 
 	board := NewRandomBoard()
-	player := NewPlayer(name, board)
 
 	if _, ok := c.boards[board.ID()]; ok {
 		// XXX retry a few times instead of returning right away
@@ -51,7 +48,7 @@ func (c *Caller) AddPlayer(name PlayerName) (Player, error) {
 	c.boards[board.ID()] = name
 	c.players[name] = board
 
-	return player, nil
+	return NewPlayer(name, board), nil
 }
 
 // Announce announces a card from the deck.
@@ -65,7 +62,7 @@ func (c *Caller) Announce() (Card, error) {
 	// We update our internal copies to use them later in `Loteria` for
 	// confirming the player really won.
 	for name, board := range c.players {
-		if board.Mark(card) != nil {
+		if board.Mark(card) == nil {
 			c.players[name] = board
 		}
 	}

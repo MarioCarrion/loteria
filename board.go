@@ -1,9 +1,6 @@
 package loteria
 
 import (
-	"crypto/md5" //nolint: gosec
-	"encoding/json"
-	"fmt"
 	"math/rand"
 	"time"
 )
@@ -12,16 +9,18 @@ type (
 	// Board defines a "tabla", which is 4x4 grid of 16 Cards.
 	Board struct {
 		WinningPattern WinningPattern
-		marked         index
-		cards          map[Card]index
 		id             BoardID
+		marked         boardIndex
+		cardsComputed  bool
+		cardsMap       map[Card]boardIndex
+		cards          [16]Card
 	}
 
 	// BoardID represents the Board ID
-	BoardID string
+	BoardID uint16
 
-	// index indicates the concrete bit to enable in "Board.marked".
-	index uint16
+	// boardIndex indicates the location (bitwise) of cards on the board.
+	boardIndex uint16
 )
 
 const (
@@ -32,11 +31,11 @@ const (
 
 // NewBoard returns a new board using concrete cards.
 // FIXME validate: cards uniqueness.
-func NewBoard(cards []Card) Board {
-	board := Board{cards: map[Card]index{}}
+func NewBoard(cards [16]Card) Board {
+	board := Board{cardsMap: map[Card]boardIndex{}}
 	var bit uint16
 	for _, card := range cards {
-		board.cards[card] = index(1) << bit
+		board.cardsMap[card] = boardIndex(1) << bit
 		bit++
 	}
 
@@ -47,19 +46,24 @@ func NewBoard(cards []Card) Board {
 func NewRandomBoard() Board {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 
-	cards := map[Card]index{}
+	cards := map[Card]boardIndex{}
 	for len(cards) < 16 {
 		v := r.Intn(53)
 		if _, ok := cards[Card(v)]; !ok {
-			cards[Card(v)] = index(1) << uint16(len(cards))
+			cards[Card(v)] = boardIndex(1) << uint16(len(cards))
 		}
 	}
 
-	return Board{cards: cards}
+	return Board{cardsMap: cards}
 }
 
 // Cards returns the cards on the board.
 func (b *Board) Cards() [16]Card {
+	if b.cardsComputed {
+		return b.cards
+	}
+	b.cardsComputed = true
+
 	findIndex := func(n uint16) int {
 		var i uint16 = 1
 		var pos uint16 = 1
@@ -72,34 +76,32 @@ func (b *Board) Cards() [16]Card {
 		return int(pos - 1)
 	}
 
-	cards := [16]Card{}
-
-	for k, v := range b.cards {
-		cards[findIndex(uint16(v))] = k
+	for k, v := range b.cardsMap {
+		b.cards[findIndex(uint16(v))] = k
 	}
 
-	return cards
+	return b.cards
 }
 
 // ID returns the Board Identifier
 func (b *Board) ID() BoardID {
-	if b.id != "" {
+	if b.id != 0 {
 		return b.id
 	}
 
-	a := []byte{}
-	for _, c := range b.cards {
-		jb, _ := json.Marshal(c) //nolint: gosec
-		a = append(a, jb...)
+	var res uint16
+	for _, c := range b.cardsMap {
+		res |= uint16(c)
 	}
-	b.id = BoardID(fmt.Sprintf("%x", md5.Sum(a))) //nolint: gosec
+
+	b.id = BoardID(res)
 
 	return b.id
 }
 
 // Mark marks off the card on the board.
 func (b *Board) Mark(c Card) error {
-	index, ok := b.cards[c]
+	index, ok := b.cardsMap[c]
 	if !ok {
 		return ErrCardNotOnBoard
 	}

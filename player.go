@@ -20,7 +20,7 @@ func NewPlayer(name PlayerName, board Board) Player {
 	}
 }
 
-// IsWinner returns true if a winning pattern was reached.
+// IsWinner indicates whether the marked cards win the game.
 func (p *Player) IsWinner() bool {
 	return p.board.IsWinner()
 }
