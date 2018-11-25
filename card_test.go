@@ -1,7 +1,6 @@
 package loteria_test
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -13,23 +12,14 @@ func TestDeck_Select(t *testing.T) {
 
 	i := 0
 	for {
-		t.Run(fmt.Sprintf("Index %d", i), func(tt *testing.T) {
-			card, err := deck.Select()
-			if err != nil {
-				if i != 53 {
-					tt.Fatalf("expected to return error when deck is empty")
-				}
-				tt.Fatalf("unexpected error: %s", err)
-			}
-
-			if uint64(card) >= 54 {
-				tt.Fatalf("invalid Card %d/%d", i, card)
-			}
-		})
+		_, err := deck.Select()
 		i++
-		if i >= 54 {
+		if err != nil {
 			break
 		}
+	}
+	if i != 55 {
+		t.Fatalf("expected to return error when deck is empty")
 	}
 }
 

@@ -53,13 +53,19 @@ func (c *Caller) AddPlayer(name PlayerName) (Player, error) {
 
 // Announce announces a card from the deck.
 func (c *Caller) Announce() (Card, error) {
+	// XXX Must have at least one player to start the game.
+	if c.gameFinished {
+		return blankCard, fmt.Errorf("game already finished")
+	}
+
 	c.gameStarted = true
 	card, err := c.deck.Select()
 	if err != nil {
+		c.gameFinished = true
 		return card, err
 	}
 
-	// We update our internal copies to use them later in `Loteria` for
+	// We update our internal boards to use them later in `Loteria` for
 	// confirming the player really won.
 	for name, board := range c.players {
 		if board.Mark(card) == nil {
