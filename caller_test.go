@@ -63,5 +63,66 @@ func TestCaller_Announce(t *testing.T) {
 	}
 }
 
-func TestCaller_Loteria(t *testing.T) {
+func TestCaller_Loteria(t *testing.T) { //nolint: gocyclo
+	t.Run("Err: game has not started", func(ts *testing.T) {
+		if caller := loteria.NewCaller(); caller.Loteria("mario") == nil {
+			ts.Fatalf("expected error, got nil")
+		}
+	})
+
+	t.Run("Err: game already finished", func(ts *testing.T) {
+		caller := loteria.NewCaller()
+		if _, err := caller.AddPlayer("mario"); err != nil {
+			ts.Fatalf("expected no error, got %s", err)
+		}
+
+		for {
+			if _, err := caller.Announce(); err != nil {
+				break
+			}
+		}
+
+		if err := caller.Loteria("mario"); err == nil {
+			ts.Fatalf("expected error, got nil")
+		}
+	})
+
+	t.Run("Err: player not part of the game", func(ts *testing.T) {
+		caller := loteria.NewCaller()
+		caller.Announce()
+
+		if err := caller.Loteria("mario"); err == nil {
+			ts.Fatalf("expected error, got nil")
+		}
+	})
+
+	t.Run("Err: board is not a winner one", func(ts *testing.T) {
+		caller := loteria.NewCaller()
+		caller.AddPlayer("mario")
+		caller.Announce()
+
+		if err := caller.Loteria("mario"); err == nil {
+			ts.Fatalf("expected error, got nil")
+		}
+	})
+
+	t.Run("OK", func(ts *testing.T) {
+		caller := loteria.NewCaller()
+		caller.AddPlayer("mario")
+
+		winnerFound := false
+		for i := 0; i < 54; i++ {
+			if _, err := caller.Announce(); err != nil {
+				ts.Fatalf("expected no error got %s", err)
+			}
+
+			if err := caller.Loteria("mario"); err == nil {
+				winnerFound = true
+				break
+			}
+		}
+		if !winnerFound {
+			ts.Fatalf("expected to have a winner")
+		}
+	})
 }

@@ -43,7 +43,6 @@ AnnouncingLoop:
 				fmt.Printf("\n%s WON!!\n", player.Name())
 				break AnnouncingLoop
 			}
-			// fmt.Printf("\n")
 		}
 	}
 }
